@@ -14,8 +14,8 @@ CC_OPTS_GLOBAL=\
 $(INCLUDE_DIRS)\
 -DF_CPU=16000000UL\
 
-TARGET=mega
-AVRDUDE_PORT=/dev/ttyUSB0
+TARGET=uno
+AVRDUDE_PORT=/dev/ttyACM0
 
 ifeq ($(TARGET), mega)
 	CC_OPTS_GLOBAL += -mmcu=atmega2560 -D__AVR_3_BYTE_PC__
