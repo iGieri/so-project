@@ -1,0 +1,4 @@
+arduino/*.elf
+arduino/*.hex
+arduino/avr_common/*.o
+
