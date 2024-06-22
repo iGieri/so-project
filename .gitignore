@@ -3,3 +3,5 @@ arduino/*.hex
 arduino/avr_common/*.o
 
 driver/driver
+driver/driver.o
+driver/serial/serial_linux.o

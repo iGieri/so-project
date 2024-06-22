@@ -1,17 +1,36 @@
-CC=gcc
-CCOPTS=--std=gnu99 -Wall -D_LIST_DEBUG_ 
-AR=ar
+# Nome del compilatore
+CC = gcc
 
-OBJS=driver.o
+# Opzioni di compilazione
+CFLAGS = -Wall -Wextra -I. -Iserial
 
-HEADERS=driver.h
+# File oggetto
+OBJ = driver.o serial/serial_linux.o
 
-BINS=driver 
+# Nome dell'eseguibile
+TARGET = driver
 
-all:	$(LIBS) $(BINS)
+# Regola di default
+all: $(TARGET)
 
-%.o:	%.c $(HEADERS)
-	$(CC) $(CCOPTS) -c -o $@  $<
+# Regola per creare l'eseguibile
+$(TARGET): $(OBJ)
+	$(CC) -o $@ $^
 
+# Regola per compilare driver.o
+driver.o: driver.c driver.h serial/serial_linux.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Regola per compilare serial_linux.o
+serial/serial_linux.o: serial/serial_linux.c serial/serial_linux.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Regola per pulire i file generati
 clean:
-	rm -rf *.o *~ $(LIBS) $(BINS)
+	rm -f $(OBJ) $(TARGET)
+
+# Regola per eseguire l'eseguibile
+run: $(TARGET)
+	./$(TARGET)
+
+.PHONY: all clean run

@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <linux/uinput.h>
 #include "driver.h"
+#include "serial/serial_linux.h"
 
 
 void handle_error(const char* error) {
@@ -32,8 +33,6 @@ void joystick_init(int fd, struct uinput_setup* usetup) {
     ret = ioctl(fd, UI_SET_KEYBIT, BTN_JOYSTICK);
     if (ret == -1) handle_error("Error ioctl BTN_JOYSTICK");
 
-    
-
     // Configuration
     memset(usetup, 0, sizeof(struct uinput_setup));
     usetup->id.bustype = BUS_USB;
@@ -50,7 +49,7 @@ void joystick_init(int fd, struct uinput_setup* usetup) {
     if (ret == -1) handle_error("Error ioctl DEV_CREATE");
 }
 
-void joystick_destroy(fd) {
+void joystick_destroy(int fd) {
     int ret;
     ret = ioctl(fd, UI_DEV_DESTROY);
     if (ret == -1) handle_error("Error ioctl DEV_DESTROY");
@@ -59,18 +58,31 @@ void joystick_destroy(fd) {
 }
 
 int main() {
-    int fd;
+    int joystick_fd;
+    int serial_fd;
     struct uinput_setup usetup;
     int ret;
 
-    fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
-    if (fd == -1) handle_error("Error on opening file descriptor");
+    serial_fd = serial_open(SERIAL_DEVICE);
+    if (serial_fd == -1) handle_error("Error on opening serial file descriptor");
 
-    joystick_init(fd, &usetup);
+    serial_set_interface_attribs(serial_fd, SERIAL_BAUDRATE, 0);
+    serial_set_blocking(serial_fd, 1);
 
-    sleep(10);
+    joystick_fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+    if (joystick_fd == -1) handle_error("Error on opening joystick file descriptor");
 
-    joystick_destroy(fd);
+    joystick_init(joystick_fd, &usetup);
+
+    while(1) {
+        // read from serial
+        char buf[1024];
+        memset(buf, 0, 1024);
+        int nchars=read(serial_fd, buf,1024);
+        printf("%s", buf);
+    }
+
+    joystick_destroy(joystick_fd);
 
     return 0;
 }
