@@ -9,7 +9,7 @@ In this project I'm creating a joystick with arduino that will work like a real 
 I am using:
 
 - Ubuntu 22.04 (ARM edition)
-- Arduino Mega 2540 (AZ-Delivery)
+- Arduino Uno (Original)
 - Elegoo Joystick Module
 
 ## File structure
