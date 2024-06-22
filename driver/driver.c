@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/uinput.h>
+#include <errno.h>
 #include "driver.h"
 #include "serial/serial_linux.h"
 
@@ -78,8 +79,20 @@ int main() {
         // read from serial
         char buf[1024];
         memset(buf, 0, 1024);
-        int nchars=read(serial_fd, buf,1024);
-        printf("%s", buf);
+
+        int bytes_read = 0;
+        do {
+            ret = read(serial_fd, buf+bytes_read, 1);
+            if (ret == -1) {
+                if (errno == EINTR) continue;
+                else handle_error("Error reading serial");
+            }
+        } while(buf[bytes_read++] != '\n');
+
+        int x, y;
+        sscanf(buf, "%d,%d\n", &x, &y);
+
+        printf("x: %d\ty: %d\tbuf: %s", x, y, buf);
     }
 
     joystick_destroy(joystick_fd);

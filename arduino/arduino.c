@@ -40,7 +40,7 @@ int main(void){
     uint16_t x_value = adc_read(0); // A0 è il canale 0
     uint16_t y_value = adc_read(1); // A1 è il canale 1
 
-    printf("x %d\t y %d \n",x_value, y_value);
+    printf("%d,%d\n",x_value, y_value);
     _delay_ms(50);
   }
   
