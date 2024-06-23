@@ -50,6 +50,29 @@ void joystick_init(int fd, struct uinput_setup* usetup) {
     if (ret == -1) handle_error("Error ioctl DEV_CREATE");
 }
 
+void joystick_event(int fd, int x, int y, int btn) {
+    struct input_event event;
+    int ret;
+    memset(&event, 0, sizeof(struct input_event));
+    event.type = EV_ABS;
+    
+    event.code = ABS_X;
+    event.value = x;
+    ret = write(fd, &event, sizeof(struct input_event));
+    if (ret == -1) handle_error("Error write X");
+
+    event.code = ABS_Y;
+    event.value = y;
+    ret = write(fd, &event, sizeof(struct input_event));
+    if (ret == -1) handle_error("Error write Y");
+
+    event.type = EV_KEY;
+    event.code = BTN_JOYSTICK;
+    event.value = btn;
+    ret = write(fd, &event, sizeof(struct input_event));
+    if (ret == -1) handle_error("Error write button");
+}
+
 void joystick_destroy(int fd) {
     int ret;
     ret = ioctl(fd, UI_DEV_DESTROY);
@@ -93,6 +116,9 @@ int main() {
         sscanf(buf, "%d,%d\n", &x, &y);
 
         printf("x: %d\ty: %d\tbuf: %s", x, y, buf);
+
+        if (x<1024 && y<1024)
+        joystick_event(joystick_fd, x, y, 0);
     }
 
     joystick_destroy(joystick_fd);
