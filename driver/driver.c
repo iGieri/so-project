@@ -112,13 +112,13 @@ int main() {
             }
         } while(buf[bytes_read++] != '\n');
 
-        int x, y;
-        sscanf(buf, "%d,%d\n", &x, &y);
+        int x, y, button;
+        sscanf(buf, "%d,%d,%d\n", &x, &y, &button);
 
-        printf("x: %d\ty: %d\tbuf: %s", x, y, buf);
+        printf("x: %d\ty: %d\tbut: %d\n", x, y, button);
 
         if (x<1024 && y<1024)
-        joystick_event(joystick_fd, x, y, 0);
+        joystick_event(joystick_fd, x, y, button);
     }
 
     joystick_destroy(joystick_fd);
