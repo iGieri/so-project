@@ -121,13 +121,13 @@ int main() {
             }
         } while(buf[bytes_read++] != '\n');
 
-        int x, y;
-        sscanf(buf, "%d,%d\n", &x, &y);
+        int x, y, button;
+        sscanf(buf, "%d,%d,%d\n", &x, &y, &button);
 
-        printf("x: %d\ty: %d\tbuf: %s", x, y, buf);
+        printf("x: %d\ty: %d\tbut: %d\n", x, y, button);
 
         if (x<1024 && y<1024)
-        mouse_event(mouse_fd, x-509, y-534, 0);
+        mouse_event(mouse_fd, x-509, y-534, button);
     }
 
     mouse_destroy(mouse_fd);
