@@ -6,3 +6,5 @@ driver/driver
 driver/driver_mouse
 driver/*.o
 driver/serial/serial_linux.o
+
+test/test
