@@ -10,11 +10,11 @@ typedef struct __attribute__((packed)) {
   uint16_t x_axis;
   uint16_t y_axis;
   uint8_t button;
-} JoystickEvent;
+} joystick_event;
 
-volatile uint8_t txBuffer[TX_BUFFER_SIZE];
-volatile uint8_t txIndex = 0;
-volatile uint8_t txReadIndex = 0;
+volatile uint8_t tx_buffer[TX_BUFFER_SIZE];
+volatile uint8_t tx_index = 0;
+volatile uint8_t tx_read_index = 0;
 
 void UART_init(uint16_t baudrate) {
   uint16_t ubrr_value = (F_CPU / 16 / baudrate) - 1;
@@ -25,7 +25,7 @@ void UART_init(uint16_t baudrate) {
   UCSR0B = (1 << RXEN0) | (1 << TXEN0);
   UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
 
-  // Abilita l'interrupt di trasmissione
+  // Activating UART interrupts
   UCSR0B |= (1 << UDRIE0);
 }
 
@@ -67,37 +67,33 @@ uint8_t digital_read() {
   return (PINB&(1 << 0))==0;
 }
 
-void UART_transmit_struct(JoystickEvent* ev) {
-  uint8_t* byte = (uint8_t*)ev;
-  uint8_t size = sizeof(JoystickEvent);
+void UART_transmit_struct(joystick_event* ev) {
+  uint8_t* byte = (uint8_t*) ev;
+  uint8_t size = sizeof(joystick_event);
 
   for (uint8_t i = 0; i < size; i++) {
-    uint8_t next = (txIndex + 1) % TX_BUFFER_SIZE;
-    while (next == txReadIndex);  // Attende se il buffer è pieno
-
-    txBuffer[txIndex] = byte[i];
-    txIndex = next;
+    uint8_t next = (tx_index + 1) % TX_BUFFER_SIZE;
+    while (next == tx_read_index);  // Spinlock buffer full
+    tx_buffer[tx_index] = byte[i];
+    tx_index = next;
   }
 
-  // Abilita l'interrupt di trasmissione
+  // Activating Transmition Interrupt
   UCSR0B |= (1 << UDRIE0);
 }
 
 ISR(USART_UDRE_vect) {
-  if (txReadIndex != txIndex) {
-    UDR0 = txBuffer[txReadIndex];
-    txReadIndex = (txReadIndex + 1) % TX_BUFFER_SIZE;
+  if (tx_read_index != tx_index) {
+    UDR0 = tx_buffer[tx_read_index];
+    tx_read_index = (tx_read_index + 1) % TX_BUFFER_SIZE;
   } else {
-      UCSR0B &= ~(1 << UDRIE0);  // Disabilita l'interrupt di trasmissione se il buffer è vuoto
+    UDR0 = '\n';
+    UCSR0B &= ~(1 << UDRIE0);  // Send \n and stop transmission if the buffer is empty 
   }
 }
 
-
-
 int main(void){
-  // this initializes the printf/uart thingies
-  // printf_init(); 
-
+  // initializations
   UART_init(19200);
   
   adc_init();
@@ -111,15 +107,14 @@ int main(void){
     uint16_t y_value = adc_read(1); 
     uint8_t button = digital_read();
 
-    // printf("%d,%d,%d\n",x_value, y_value, button);
-    JoystickEvent ev;
+    joystick_event ev;
     ev.x_axis = x_value;
     ev.y_axis = y_value;
     ev.button = button;
 
     UART_transmit_struct(&ev);
 
-    _delay_ms(50);
+    _delay_ms(5);
   }
   
 }

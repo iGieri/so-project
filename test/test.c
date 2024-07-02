@@ -83,14 +83,14 @@ int main() {
         if (js.type == JS_EVENT_AXIS) {
             // x axis
             if (js.number == 1) {
-                if (js.value < 250 && pp->x > 0) pp->x--; // left
-                if (js.value > 750 && pp->x < MATRIX_SIZE - 1) pp->x++; // right
+                if (js.value < -1000 && pp->x > 0) pp->x--; // left
+                if (js.value > 1000 && pp->x < MATRIX_SIZE - 1) pp->x++; // right
             }
 
             // y axis
             if (js.number == 0) {
-                if (js.value < 250 && pp->y > 0) pp->y--; // up
-                if (js.value > 750 && pp->y < MATRIX_SIZE - 1) pp->y++; // down
+                if (js.value < -1000 && pp->y > 0) pp->y--; // up
+                if (js.value > 1000 && pp->y < MATRIX_SIZE - 1) pp->y++; // down
             }
 
             matrix_update();

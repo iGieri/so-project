@@ -8,12 +8,14 @@
 #include <stdint.h>
 #include "driver.h"
 #include "serial/serial_linux.h"
+#define BUFFER_SIZE 128
+
 
 typedef struct __attribute__((packed)) {
   uint16_t x_axis;
   uint16_t y_axis;
   uint8_t button;
-} JoystickEvent;
+} joystick_event_t;
 
 void handle_error(const char* error) {
     perror(error);
@@ -104,39 +106,22 @@ int main() {
 
     joystick_init(joystick_fd, &usetup);
 
-    JoystickEvent oldev;
-    ret = read(serial_fd, &oldev, sizeof(JoystickEvent));
-    if (ret == -1) handle_error("Error reading serial");
-
     while(1) {
-        // read from serial
-        // char buf[1024];
-        // memset(buf, 0, 1024);
+        uint8_t buf[BUFFER_SIZE];
 
-        // int bytes_read = 0;
-        // do {
-        //     ret = read(serial_fd, buf+bytes_read, 1);
-        //     if (ret == -1) {
-        //         if (errno == EINTR) continue;
-        //         else handle_error("Error reading serial");
-        //     }
-        // } while(buf[bytes_read++] != '\n');
+        int bytes_read = 0;
+        do {
+            ret = read(serial_fd, buf+bytes_read, 1);
+            if (ret == -1) {
+                if (errno == EINTR) continue;
+                else handle_error("Error reading serial");
+            }
+        } while(buf[bytes_read++] != '\n');
 
-        // int x, y, button;
-        // sscanf(buf, "%d,%d,%d\n", &x, &y, &button);
+        joystick_event_t ev = *((joystick_event_t*) buf);
+        printf("x: %d\ty: %d\tbut: %d\n", ev.x_axis, ev.y_axis, ev.button);
+        joystick_event(joystick_fd, ev.x_axis, ev.y_axis, ev.button);
 
-        // 
-
-        JoystickEvent ev;
-        ret = read(serial_fd, &ev, sizeof(JoystickEvent));
-        if (ret == -1) handle_error("Error reading serial");
-
-        if (oldev.x_axis - ev.x_axis < 250  && oldev.y_axis - ev.y_axis < 250 ) {
-            printf("x: %d\ty: %d\tbut: %d\n", ev.x_axis, ev.y_axis, ev.button);
-            joystick_event(joystick_fd, ev.x_axis, ev.y_axis, ev.button);
-        }
-
-        oldev = ev;
     }
 
     joystick_destroy(joystick_fd);
