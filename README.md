@@ -16,8 +16,8 @@ I am using:
 
 The repository structure is the following:
 
-- arduino/ contains the source for the arduino
-- driver/ contains the source for the driver
-- test/ contains the source to test if the joystick is working 
+- `arduino/` contains the source for the arduino
+- `driver/` contains the source for the driver
+- `test/` contains the source to test if the joystick is working 
 
 Every directory contains a README about that specific part

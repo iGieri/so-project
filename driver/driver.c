@@ -5,9 +5,17 @@
 #include <unistd.h>
 #include <linux/uinput.h>
 #include <errno.h>
+#include <stdint.h>
 #include "driver.h"
 #include "serial/serial_linux.h"
+#define BUFFER_SIZE 128
 
+
+typedef struct __attribute__((packed)) {
+  uint16_t x_axis;
+  uint16_t y_axis;
+  uint8_t button;
+} joystick_event_t;
 
 void handle_error(const char* error) {
     perror(error);
@@ -99,9 +107,7 @@ int main() {
     joystick_init(joystick_fd, &usetup);
 
     while(1) {
-        // read from serial
-        char buf[1024];
-        memset(buf, 0, 1024);
+        uint8_t buf[BUFFER_SIZE];
 
         int bytes_read = 0;
         do {
@@ -112,13 +118,10 @@ int main() {
             }
         } while(buf[bytes_read++] != '\n');
 
-        int x, y, button;
-        sscanf(buf, "%d,%d,%d\n", &x, &y, &button);
+        joystick_event_t ev = *((joystick_event_t*) buf);
+        printf("x: %d\ty: %d\tbut: %d\n", ev.x_axis, ev.y_axis, ev.button);
+        joystick_event(joystick_fd, ev.x_axis, ev.y_axis, ev.button);
 
-        printf("x: %d\ty: %d\tbut: %d\n", x, y, button);
-
-        if (x<1024 && y<1024)
-        joystick_event(joystick_fd, x, y, button);
     }
 
     joystick_destroy(joystick_fd);
