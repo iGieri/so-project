@@ -1,3 +1,4 @@
-#pragma once
+#include <stdint.h>
+#define BAUD 19200
 
-void printf_init(void);
+void UART_init(uint16_t baudrate);

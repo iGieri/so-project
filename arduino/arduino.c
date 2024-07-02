@@ -4,6 +4,7 @@
 #include "../avr_common/uart.h" // this includes the printf and initializes it
 #include <avr/io.h>
 #include <avr/interrupt.h>
+
 #define TX_BUFFER_SIZE 128
 
 typedef struct __attribute__((packed)) {
@@ -12,23 +13,9 @@ typedef struct __attribute__((packed)) {
   uint8_t button;
 } joystick_event;
 
-volatile uint8_t tx_buffer[TX_BUFFER_SIZE];
-volatile uint8_t tx_index = 0;
-volatile uint8_t tx_read_index = 0;
-
-void UART_init(uint16_t baudrate) {
-  uint16_t ubrr_value = (F_CPU / 16 / baudrate) - 1;
-
-  UBRR0H = (uint8_t)(ubrr_value >> 8);
-  UBRR0L = (uint8_t)ubrr_value;
-
-  UCSR0B = (1 << RXEN0) | (1 << TXEN0);
-  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
-
-  // Activating UART interrupts
-  UCSR0B |= (1 << UDRIE0);
-}
-
+uint8_t tx_buffer[TX_BUFFER_SIZE];
+uint8_t tx_index = 0;
+uint8_t tx_read_index = 0;
 
 void adc_init() {
   // Setting ADC Prescaler to 128
@@ -82,6 +69,7 @@ void UART_transmit_struct(joystick_event* ev) {
   UCSR0B |= (1 << UDRIE0);
 }
 
+
 ISR(USART_UDRE_vect) {
   if (tx_read_index != tx_index) {
     UDR0 = tx_buffer[tx_read_index];
@@ -94,7 +82,7 @@ ISR(USART_UDRE_vect) {
 
 int main(void){
   // initializations
-  UART_init(19200);
+  UART_init(BAUD);
   
   adc_init();
 
