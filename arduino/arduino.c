@@ -5,7 +5,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define TX_BUFFER_SIZE 128
+#define TX_BUFFER_SIZE 256
+
+long map(long value, long input_min, long input_max, long output_min, long output_max) {
+  return (value - input_min) * (output_max - output_min) / (input_max - input_min) + output_min;
+}
+
 
 typedef struct __attribute__((packed)) {
   uint16_t x_axis;
@@ -91,8 +96,8 @@ int main(void){
   sei();
 
   while(1){
-    uint16_t x_value = adc_read(0);
-    uint16_t y_value = adc_read(1); 
+    uint16_t x_value = map(adc_read(0), 0, 1024, 0, 700);
+    uint16_t y_value = map(adc_read(1), 0, 1024, 0, 700); 
     uint8_t button = digital_read();
 
     joystick_event ev;
@@ -102,7 +107,7 @@ int main(void){
 
     UART_transmit_struct(&ev);
 
-    _delay_ms(5);
+    _delay_ms(50);
   }
   
 }
