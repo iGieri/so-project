@@ -2,6 +2,10 @@ arduino/*.elf
 arduino/*.hex
 arduino/avr_common/*.o
 
+receiver/*.elf
+receiver/*.hex
+receiver/avr_common/*.o
+
 driver/driver
 driver/driver_mouse
 driver/*.o

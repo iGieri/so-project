@@ -1,5 +1,5 @@
-#define SERIAL_DEVICE "/dev/ttyACM0"
-#define SERIAL_BAUDRATE 19200
+#define SERIAL_DEVICE "/dev/ttyUSB0"
+#define SERIAL_BAUDRATE 9600
 
 void handle_error(const char* error);
 
